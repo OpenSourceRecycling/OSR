@@ -1,0 +1,52 @@
+#! /bin/bash
+
+ISO="/home/pmy/Downloads/debian-9.1.0-amd64-netinst.iso"
+MOUNT="/mnt/iso"
+WORK="/var/tmp/debiso"
+
+if [ ! -d $MOUNT ]; then
+	mkdir $MOUNT
+fi
+
+# mount ISO image, copy to work area
+
+mount -o loop,ro $ISO $MOUNT
+rm -rf $WORK
+mkdir -p $WORK
+rsync -av $MOUNT/ $WORK
+umount $MOUNT
+
+# edit initrd
+
+cp preseed.cfg $WORK
+HERE=$PWD
+cd $WORK
+
+#	edit command initrd
+
+INITRD="install.amd/initrd"
+gunzip $INITRD.gz
+echo preseed.cfg | cpio -H newc -o -A -F $INITRD
+gzip $INITRD
+
+#	edit graphic initrd
+
+INITRD="install.amd/gtk/initrd"
+gunzip $INITRD.gz
+echo preseed.cfg | cpio -H newc -o -A -F $INITRD
+gzip $INITRD
+
+# update checksum
+
+rm preseed.cfg
+md5sum `find -follow -type f` > md5sum.txt
+
+# remaster ISO image
+
+cd $HERE
+BASE=`basename $ISO`
+PRESEED="preseed-${BASE}"
+genisoimage -r -J -b isolinux/isolinux.bin -c isolinux/boot.cat \
+	-no-emul-boot -boot-load-size 4 -boot-info-table \
+	-o ${PRESEED} $WORK
+isohybrid $PRESEED
