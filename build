@@ -16,9 +16,14 @@ mkdir -p $WORK
 rsync -av $MOUNT/ $WORK
 umount $MOUNT
 
+# set non-zero boot timeout to autostart install
+
+sed -i -e 's/timeout 0$/timeout 50/' $WORK/isolinux/isolinux.cfg
+
 # edit initrd
 
 cp preseed.cfg $WORK
+
 HERE=$PWD
 cd $WORK
 
