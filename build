@@ -3,7 +3,6 @@
 ISO="/home/pmy/Downloads/debian-9.1.0-amd64-netinst.iso"
 MOUNT="/mnt/iso"
 WORK="/var/tmp/debiso"
-PASSWORD="foobar"
 
 if [ ! "`whoami`" = "root" ]; then
 	echo "run as root"
@@ -16,19 +15,26 @@ fi
 
 ##### mount ISO image, copy to work area
 
+echo "mount master ISO, copy to work area"
+
 mount -o loop,ro $ISO $MOUNT
 rm -rf $WORK
 mkdir -p $WORK
-rsync -av $MOUNT/ $WORK
+rsync -a $MOUNT/ $WORK
 umount $MOUNT
 
 ##### set non-zero boot timeout to autostart install
+
+echo "patch initrd image and add scripts: preseed.cfg, finalize, find_disk"
 
 sed -i -e 's/timeout 0$/timeout 50/' $WORK/isolinux/isolinux.cfg
 
 ##### edit initrd
 
 #	patch preseed.cfg
+
+PASSWORD=`date +%s|sha256sum|base64|head -c 12`
+echo "generated login password (record this somewhere): $PASSWORD"
 
 m4 -DPASSWORD=$PASSWORD \
 	preseed.cfg > $WORK/preseed.cfg
@@ -41,35 +47,42 @@ cd $WORK
 
 #	edit command initrd
 
+echo "rewrap command install initrd"
 INITRD="install.amd/initrd"
 gunzip $INITRD.gz
-echo preseed.cfg | cpio -H newc -o -A -F $INITRD
-echo finalize | cpio -H newc -o -A -F $INITRD
-echo find_disk | cpio -H newc -o -A -F $INITRD
+echo preseed.cfg | cpio --quiet -H newc -o -A -F $INITRD
+echo finalize | cpio --quiet -H newc -o -A -F $INITRD
+echo find_disk | cpio --quiet -H newc -o -A -F $INITRD
 gzip $INITRD
 
 #	edit graphic initrd
 
+echo "rewrap GUI install initrd"
 INITRD="install.amd/gtk/initrd"
 gunzip $INITRD.gz
-echo preseed.cfg | cpio -H newc -o -A -F $INITRD
-echo finalize | cpio -H newc -o -A -F $INITRD
-echo find_disk | cpio -H newc -o -A -F $INITRD
+echo preseed.cfg | cpio --quiet -H newc -o -A -F $INITRD
+echo finalize | cpio --quiet -H newc -o -A -F $INITRD
+echo find_disk | cpio --quiet -H newc -o -A -F $INITRD
 gzip $INITRD
 
 ##### update checksum
 
+echo "update checksums"
 rm preseed.cfg
 rm finalize
 rm find_disk
-md5sum `find -follow -type f` > md5sum.txt
+md5sum `find 2>/dev/null -follow -type f` > md5sum.txt
 
 ##### remaster ISO image
+
 
 cd $HERE
 BASE=`basename $ISO`
 PRESEED="preseed-${BASE}"
-genisoimage -r -J -b isolinux/isolinux.bin -c isolinux/boot.cat \
+echo "remaster ISO image: $PRESEED"
+genisoimage -quiet -r -J -b isolinux/isolinux.bin -c isolinux/boot.cat \
 	-no-emul-boot -boot-load-size 4 -boot-info-table \
 	-o ${PRESEED} $WORK
+# make bootable
 isohybrid $PRESEED
+echo "done"
