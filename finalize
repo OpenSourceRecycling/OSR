@@ -1,5 +1,7 @@
 #! /bin/bash
 
+apt-get update && apt-get -y upgrade
+
 if [ -d /etc/lightdm ]; then
 	sed -i -e 's/^#autologin-user=.*$/autologin-user=me/' /etc/lightdm/lightdm.conf
 fi
