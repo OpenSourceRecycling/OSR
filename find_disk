@@ -1,0 +1,15 @@
+#!/bin/sh
+
+DEVS=""
+for dev in $(list-devices disk); do
+	DEVS="$DEVS `basename $dev`"
+done
+for usb in $(ls -1 2>/dev/null /dev/disk/by-id/usb*); do
+	LINK=`readlink $usb`
+	BN=`basename $LINK`
+	DEVS=`echo "$DEVS" | sed -e "s/ $BN//"`
+done
+
+DEV="/dev/$(echo $DEVS | tr -d ' ')"
+debconf-set partman-auto/disk $DEV
+debconf-set grub-installer/bootdev $DEV
