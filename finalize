@@ -1,6 +1,5 @@
 #! /bin/bash
 
-ls -l / > /usr/local/etc/foobar
 if [ -d /etc/lightdm ]; then
 	sed -i -e 's/^#autologin-user=.*$/autologin-user=me/' /etc/lightdm/lightdm.conf
 fi
