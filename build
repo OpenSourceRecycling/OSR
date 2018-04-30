@@ -30,6 +30,8 @@ m4 -DINSTALL_DEV=$INSTALL_DEV \
 	-DPASSWORD=$PASSWORD \
 	preseed.cfg > $WORK/preseed.cfg
 
+cp finalize $WORK/finalize
+
 HERE=$PWD
 cd $WORK
 
@@ -38,6 +40,7 @@ cd $WORK
 INITRD="install.amd/initrd"
 gunzip $INITRD.gz
 echo preseed.cfg | cpio -H newc -o -A -F $INITRD
+echo finalize | cpio -H newc -o -A -F $INITRD
 gzip $INITRD
 
 #	edit graphic initrd
@@ -45,11 +48,13 @@ gzip $INITRD
 INITRD="install.amd/gtk/initrd"
 gunzip $INITRD.gz
 echo preseed.cfg | cpio -H newc -o -A -F $INITRD
+echo finalize | cpio -H newc -o -A -F $INITRD
 gzip $INITRD
 
 ##### update checksum
 
 rm preseed.cfg
+rm finalize
 md5sum `find -follow -type f` > md5sum.txt
 
 ##### remaster ISO image

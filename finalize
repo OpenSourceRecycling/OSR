@@ -1,0 +1,4 @@
+#! /bin/bash
+
+ls -l / > /usr/local/etc/foobar
+sed -i -e 's/^#autologin-user=.*$/autologin-user=me/' /etc/lightdm/lightdm.conf
