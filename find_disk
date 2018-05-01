@@ -1,14 +1,27 @@
 #!/bin/sh
 
+# Set this script as installer's "early_command" preseed variable,
+# to execute before disk partitioning.
+
 DEVS=""
+
+# Get a list of all apparent writable disk devices.
+
 for dev in $(list-devices disk); do
 	DEVS="$DEVS `basename $dev`"
 done
+
+# Remove any that are referenced by "usb*" symlinks.
+
 for usb in $(ls -1 2>/dev/null /dev/disk/by-id/usb*); do
 	LINK=`readlink $usb`
 	BN=`basename $LINK`
 	DEVS=`echo "$DEVS" | sed -e "s/ $BN//"`
 done
+
+# Hopefully, we're left with a single dev name: the internal
+# drive onto which the OS should be installed. Prepend with
+# "/dev/" to use for the OS and for grub.
 
 DEV="/dev/$(echo $DEVS | tr -d ' ')"
 debconf-set partman-auto/disk $DEV

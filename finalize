@@ -1,7 +1,15 @@
 #! /bin/bash
 
+# Set this script as installer's "late_command" preseed variable,
+# to execute after completion of installation and before reboot.
+
+# freshen all packages
+
 apt-get update && apt-get -y upgrade
 
+# set auto-login user
+
 if [ -d /etc/lightdm ]; then
+	# LXDE desktop
 	sed -i -e 's/^#autologin-user=.*$/autologin-user=me/' /etc/lightdm/lightdm.conf
 fi
