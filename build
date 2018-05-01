@@ -1,8 +1,14 @@
 #! /bin/bash
 
-ISO="/home/pmy/Downloads/debian-9.1.0-amd64-netinst.iso"
 MOUNT="/mnt/iso"
 WORK="/var/tmp/debiso"
+
+ISO=$1
+
+if [ "$ISO" = "" ]; then
+	echo "please provide master ISO path"
+	exit
+fi
 
 if [ ! "`whoami`" = "root" ]; then
 	echo "run as root"
@@ -74,7 +80,6 @@ rm find_disk
 md5sum `find 2>/dev/null -follow -type f` > md5sum.txt
 
 ##### remaster ISO image
-
 
 cd $HERE
 BASE=`basename $ISO`
