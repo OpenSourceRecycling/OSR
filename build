@@ -24,41 +24,33 @@
 #
 # 7. Create ISO image from contents of image build area.
 
-MOUNT="/mnt/iso"
-WORK="/var/tmp/debiso"
+WORK_DIR="work"
 PASSWORD_LEN="12"
 
 ISO=$1
+
+if ! which >/dev/null 7z; then
+	echo "please install '7z' file archive utility"
+	exit
+fi
 
 if [ "$ISO" = "" ]; then
 	echo "please provide master ISO path"
 	exit
 fi
 
-if [ ! "`whoami`" = "root" ]; then
-	echo "run as root"
-	exit
-fi
+echo "unpack master ISO to work area"
 
-if [ ! -d $MOUNT ]; then
-	mkdir $MOUNT
-fi
-
-##### mount ISO image, copy to work area
-
-echo "mount master ISO, copy to work area"
-
-mount -o loop,ro $ISO $MOUNT
-rm -rf $WORK
-mkdir -p $WORK
-rsync -a $MOUNT/ $WORK
-umount $MOUNT
+rm -rf $WORK_DIR
+mkdir $WORK_DIR
+cd $WORK_DIR
+7z >/dev/null -bd x $ISO
 
 ##### set non-zero boot timeout to autostart install
 
 echo "patch initrd image and add scripts: preseed.cfg, finalize, find_disk"
 
-sed -i -e 's/timeout 0$/timeout 50/' $WORK/isolinux/isolinux.cfg
+sed -i -e 's/timeout 0$/timeout 50/' isolinux/isolinux.cfg
 
 ##### edit initrd
 
@@ -68,13 +60,10 @@ PASSWORD=`date +%s|sha256sum|base64|head -c $PASSWORD_LEN`
 echo "generated login password (record this somewhere): $PASSWORD"
 
 m4 -DPASSWORD=$PASSWORD \
-	preseed.cfg > $WORK/preseed.cfg
+	../preseed.cfg > preseed.cfg
 
-cp finalize $WORK/finalize
-cp find_disk $WORK/find_disk
-
-HERE=$PWD
-cd $WORK
+cp ../finalize .
+cp ../find_disk .
 
 #	edit command initrd
 
@@ -106,13 +95,13 @@ md5sum `find 2>/dev/null -follow -type f` > md5sum.txt
 
 ##### remaster ISO image
 
-cd $HERE
+cd ..
 BASE=`basename $ISO`
 PRESEED="preseed-${BASE}"
 echo "remaster ISO image: $PRESEED"
 genisoimage -quiet -r -J -b isolinux/isolinux.bin -c isolinux/boot.cat \
 	-no-emul-boot -boot-load-size 4 -boot-info-table \
-	-o ${PRESEED} $WORK
+	-o ${PRESEED} $WORK_DIR
 # make bootable
 isohybrid $PRESEED
 echo "done"
