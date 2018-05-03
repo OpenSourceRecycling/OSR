@@ -1,0 +1,120 @@
+#! /bin/bash
+
+# Installation ISO image builder:
+#
+# 1. Mount standard Debian installation ISO as master, copy contents
+#    to image build area.
+#
+# 2. Set a non-zero installation menu timeout so that installation
+#    may begin automatically.
+#
+# 3. Use m4 macro processor to patch standard preseed.cfg according
+#    to build variables, write patched version to image build area.
+#    Patching includes generating a login password for root and
+#    for non-root user "me".
+#
+# 4. Copy "find_disk" and "finalize" scripts to build area.
+#
+# 5. Unpack, patch, and repack initrd.gz files to include
+#    files preseed.cfg, find_disk and finalize.
+#
+# 6. Remove copies of preseed.cfg, find_disk and finalize from
+#    build area (they're now embedded in initrd.gz files) and
+#    update catalog of file checksums.
+#
+# 7. Create ISO image from contents of image build area.
+
+WORK_DIR="work"
+STD_PASSWORD="pswd"
+PASSWORD_LEN="12"
+USE_NET_MIRROR="true"
+DESKTOP="mate-desktop"
+
+ISO=$1
+
+if ! which >/dev/null 7z; then
+	echo "please install '7z' file archive utility"
+	exit
+fi
+
+if [ "$ISO" = "" ]; then
+	echo "please provide master ISO path"
+	exit
+fi
+
+echo "unpack master ISO to work area"
+
+rm -rf $WORK_DIR
+mkdir $WORK_DIR
+cd $WORK_DIR
+7z >/dev/null -bd x $ISO
+
+##### set non-zero boot timeout to autostart install
+
+echo "patch initrd image and add scripts: preseed.cfg, finalize, find_disk"
+
+sed -i -e 's/timeout 0$/timeout 50/' isolinux/isolinux.cfg
+
+##### edit initrd
+
+#	patch preseed.cfg
+
+PASSWORD=`date +%s|sha256sum|base64|head -c $PASSWORD_LEN`
+PASSWORD=$STD_PASSWORD
+USERNAME="user"
+HOSTNAME="OSR-Debian"
+echo "generated login password (record this somewhere): $PASSWORD"
+
+m4 -DPASSWORD=$PASSWORD \
+	-DUSE_NET_MIRROR=$USE_NET_MIRROR \
+	-DUSERNAME=$USERNAME \
+	-DDESKTOP=$DESKTOP \
+	-DHOSTNAME=$HOSTNAME \
+	../debian-preseed.cfg > preseed.cfg
+
+m4 -DUSERNAME=$USERNAME \
+	../finalize > finalize
+chmod +x finalize
+
+cp ../find_disk .
+
+#	edit command initrd
+
+echo "rewrap command install initrd"
+INITRD="install.amd/initrd"
+gunzip $INITRD.gz
+echo preseed.cfg | cpio --quiet -H newc -o -A -F $INITRD
+echo finalize | cpio --quiet -H newc -o -A -F $INITRD
+echo find_disk | cpio --quiet -H newc -o -A -F $INITRD
+gzip $INITRD
+
+#	edit graphic initrd
+
+echo "rewrap GUI install initrd"
+INITRD="install.amd/gtk/initrd"
+gunzip $INITRD.gz
+echo preseed.cfg | cpio --quiet -H newc -o -A -F $INITRD
+echo finalize | cpio --quiet -H newc -o -A -F $INITRD
+echo find_disk | cpio --quiet -H newc -o -A -F $INITRD
+gzip $INITRD
+
+##### update checksum
+
+echo "update checksums"
+rm preseed.cfg
+rm finalize
+rm find_disk
+md5sum `find 2>/dev/null -follow -type f` > md5sum.txt
+
+##### remaster ISO image
+
+cd ..
+BASE=`basename $ISO`
+PRESEED="preseed-${BASE}"
+echo "remaster ISO image: $PRESEED"
+genisoimage -quiet -r -J -b isolinux/isolinux.bin -c isolinux/boot.cat \
+	-no-emul-boot -boot-load-size 4 -boot-info-table \
+	-o ${PRESEED} $WORK_DIR
+# make bootable
+isohybrid $PRESEED
+echo "done"

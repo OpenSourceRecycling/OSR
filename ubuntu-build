@@ -24,11 +24,11 @@
 #
 # 7. Create ISO image from contents of image build area.
 
-WORK_DIR="work"
+WORK_DIR="ubuntu"
 STD_PASSWORD="pswd"
 PASSWORD_LEN="12"
 USE_NET_MIRROR="true"
-DESKTOP="mate-desktop"
+DESKTOP="ubuntu-desktop"
 
 ISO=$1
 
@@ -53,7 +53,7 @@ cd $WORK_DIR
 
 echo "patch initrd image and add scripts: preseed.cfg, finalize, find_disk"
 
-sed -i -e 's/timeout 0$/timeout 50/' isolinux/isolinux.cfg
+sed -i -e 's/^timeout 0/timeout 50/' isolinux.cfg
 
 ##### edit initrd
 
@@ -62,7 +62,7 @@ sed -i -e 's/timeout 0$/timeout 50/' isolinux/isolinux.cfg
 PASSWORD=`date +%s|sha256sum|base64|head -c $PASSWORD_LEN`
 PASSWORD=$STD_PASSWORD
 USERNAME="user"
-HOSTNAME="OSR-Debian"
+HOSTNAME="OSR-Ubuntu"
 echo "generated login password (record this somewhere): $PASSWORD"
 
 m4 -DPASSWORD=$PASSWORD \
@@ -70,7 +70,7 @@ m4 -DPASSWORD=$PASSWORD \
 	-DUSERNAME=$USERNAME \
 	-DDESKTOP=$DESKTOP \
 	-DHOSTNAME=$HOSTNAME \
-	../preseed.cfg > preseed.cfg
+	../ubuntu-preseed.cfg > preseed.cfg
 
 m4 -DUSERNAME=$USERNAME \
 	../finalize > finalize
@@ -81,17 +81,7 @@ cp ../find_disk .
 #	edit command initrd
 
 echo "rewrap command install initrd"
-INITRD="install.amd/initrd"
-gunzip $INITRD.gz
-echo preseed.cfg | cpio --quiet -H newc -o -A -F $INITRD
-echo finalize | cpio --quiet -H newc -o -A -F $INITRD
-echo find_disk | cpio --quiet -H newc -o -A -F $INITRD
-gzip $INITRD
-
-#	edit graphic initrd
-
-echo "rewrap GUI install initrd"
-INITRD="install.amd/gtk/initrd"
+INITRD="initrd"
 gunzip $INITRD.gz
 echo preseed.cfg | cpio --quiet -H newc -o -A -F $INITRD
 echo finalize | cpio --quiet -H newc -o -A -F $INITRD
@@ -100,11 +90,11 @@ gzip $INITRD
 
 ##### update checksum
 
-echo "update checksums"
+#echo "update checksums"
 rm preseed.cfg
 rm finalize
 rm find_disk
-md5sum `find 2>/dev/null -follow -type f` > md5sum.txt
+#md5sum `find 2>/dev/null -follow -type f` > md5sum.txt
 
 ##### remaster ISO image
 
@@ -112,7 +102,7 @@ cd ..
 BASE=`basename $ISO`
 PRESEED="preseed-${BASE}"
 echo "remaster ISO image: $PRESEED"
-genisoimage -quiet -r -J -b isolinux/isolinux.bin -c isolinux/boot.cat \
+genisoimage -quiet -r -J -b isolinux.bin -c boot.cat \
 	-no-emul-boot -boot-load-size 4 -boot-info-table \
 	-o ${PRESEED} $WORK_DIR
 # make bootable
