@@ -11,5 +11,6 @@ apt-get update && apt-get -y upgrade
 
 if [ -d /etc/lightdm ]; then
 	# LXDE desktop
-	sed -i -e 's/^#autologin-user=.*$/autologin-user=me/' /etc/lightdm/lightdm.conf
+	SUB="autologin-user=USERNAME"
+	sed -i -e "s/^#autologin-user=.*$/$SUB/" /etc/lightdm/lightdm.conf
 fi

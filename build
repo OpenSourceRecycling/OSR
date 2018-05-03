@@ -25,7 +25,10 @@
 # 7. Create ISO image from contents of image build area.
 
 WORK_DIR="work"
+STD_PASSWORD="pswd"
 PASSWORD_LEN="12"
+USE_NET_MIRROR="true"
+DESKTOP="mate-desktop"
 
 ISO=$1
 
@@ -57,12 +60,22 @@ sed -i -e 's/timeout 0$/timeout 50/' isolinux/isolinux.cfg
 #	patch preseed.cfg
 
 PASSWORD=`date +%s|sha256sum|base64|head -c $PASSWORD_LEN`
+PASSWORD=$STD_PASSWORD
+USERNAME="user"
+HOSTNAME="OSR-Debian"
 echo "generated login password (record this somewhere): $PASSWORD"
 
 m4 -DPASSWORD=$PASSWORD \
+	-DUSE_NET_MIRROR=$USE_NET_MIRROR \
+	-DUSERNAME=$USERNAME \
+	-DDESKTOP=$DESKTOP \
+	-DHOSTNAME=$HOSTNAME \
 	../preseed.cfg > preseed.cfg
 
-cp ../finalize .
+m4 -DUSERNAME=$USERNAME \
+	../finalize > finalize
+chmod +x finalize
+
 cp ../find_disk .
 
 #	edit command initrd
