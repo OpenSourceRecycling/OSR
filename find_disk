@@ -26,3 +26,4 @@ done
 DEV="/dev/$(echo $DEVS | tr -d ' ')"
 debconf-set partman-auto/disk $DEV
 debconf-set grub-installer/bootdev $DEV
+echo "grub-pc grub-pc/install_devices multiselect $DEV" | debconf-set-selections
