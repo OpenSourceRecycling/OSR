@@ -30,7 +30,7 @@ PASSWORD_LEN="12"
 USE_NET_MIRROR="true"
 DESKTOP="mate-desktop"
 
-ISO=$1
+ISO=`realpath "$1"`
 
 if ! which >/dev/null 7z; then
 	echo "please install '7z' file archive utility"
