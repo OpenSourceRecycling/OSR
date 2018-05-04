@@ -19,8 +19,7 @@
 #    files preseed.cfg, find_disk and finalize.
 #
 # 6. Remove copies of preseed.cfg, find_disk and finalize from
-#    build area (they're now embedded in initrd.gz files) and
-#    update catalog of file checksums.
+#    build area (they're now embedded in initrd.gz files).
 #
 # 7. Create ISO image from contents of image build area.
 
@@ -88,13 +87,9 @@ echo finalize | cpio --quiet -H newc -o -A -F $INITRD
 echo find_disk | cpio --quiet -H newc -o -A -F $INITRD
 gzip $INITRD
 
-##### update checksum
-
-#echo "update checksums"
 rm preseed.cfg
 rm finalize
 rm find_disk
-#md5sum `find 2>/dev/null -follow -type f` > md5sum.txt
 
 ##### remaster ISO image
 
