@@ -9,8 +9,19 @@ apt-get update && apt-get -y upgrade
 
 # set auto-login user
 
-if [ -d /etc/lightdm ]; then
+if [ -f /etc/lightdm/lightdm.conf ]; then
 	# LXDE desktop
 	SUB="autologin-user=USERNAME"
 	sed -i -e "s/^#autologin-user=.*$/$SUB/" /etc/lightdm/lightdm.conf
+elif [ -d /etc/lightdm/lightdm.conf.d ]; then
+	SUB="USERNAME"
+	cat << EOF > /etc/lightdm/lightdm.conf.d/60-lightdm-gtk-greeter.conf
+[SeatDefaults]
+greeter-session=lightdm-gtk-greeter
+autologin-user=$SUB
+EOF
+elif [ -d /etc/gdm3 ]; then
+	sed -i -e 's/^#\s*AutomaticLoginEnable =.*$/AutomaticLoginEnable = true/' /etc/gdm3/custom.conf
+	SUB="AutomaticLogin = USERNAME"
+	sed -i -e "s/^#\s*AutomaticLogin =.*$/$SUB/" /etc/gdm3/custom.conf
 fi
