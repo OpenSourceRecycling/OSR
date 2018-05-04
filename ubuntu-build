@@ -28,7 +28,7 @@ WORK_DIR="ubuntu"
 STD_PASSWORD="pswd"
 PASSWORD_LEN="12"
 USE_NET_MIRROR="true"
-DESKTOP="ubuntu-desktop"
+DESKTOP="ubuntu-mate-desktop"
 
 ISO=$1
 
