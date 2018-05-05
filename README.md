@@ -1,8 +1,4 @@
-# OSR
-Open Source Recycling
+# OSR Debian Installer
 
-A repository for hosting and sharing the work of Charlottesville's
-**[Open Source Recycling](http://opensourcerecycling.org/)** group.
-
-### Projects:
-* Debian installation automation
+Tools for building Debian/Ubuntu hands-off automated install
+images.
