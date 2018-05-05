@@ -2,8 +2,7 @@
 
 # Installation ISO image builder:
 #
-# 1. Mount standard Debian installation ISO as master, copy contents
-#    to image build area.
+# 1. Unpack master Debian installer ISO, copy contents to image build area.
 #
 # 2. Set a non-zero installation menu timeout so that installation
 #    may begin automatically.
