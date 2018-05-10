@@ -24,11 +24,12 @@
 
 WORK_DIR="ubuntu"
 STD_PASSWORD="pswd"
+USE_STD_PASSWORD="y"
 PASSWORD_LEN="12"
 USE_NET_MIRROR="true"
 DESKTOP="ubuntu-mate-desktop"
 
-ISO=`realpath "$1"`
+ISO="$1"
 
 if ! which >/dev/null 7z; then
 	echo "please install '7z' file archive utility"
@@ -40,6 +41,9 @@ if [ "$ISO" = "" ]; then
 	exit
 fi
 
+ISO=`realpath $ISO`
+
+
 echo "unpack master ISO to work area"
 
 rm -rf $WORK_DIR
@@ -50,18 +54,22 @@ cd $WORK_DIR
 ##### set non-zero boot timeout to autostart install
 
 echo "patch initrd image and add scripts: preseed.cfg, finalize, find_disk"
-
 sed -i -e 's/^timeout 0/timeout 50/' isolinux.cfg
 
 ##### edit initrd
 
 #	patch preseed.cfg
 
-PASSWORD=`date +%s|sha256sum|base64|head -c $PASSWORD_LEN`
-PASSWORD=$STD_PASSWORD
+if [ $USE_STD_PASSWORD = "y" ]; then
+	PASSWORD=$STD_PASSWORD
+	echo "apply standard password"
+else
+	PASSWORD=`date +%s|sha256sum|base64|head -c $PASSWORD_LEN`
+	echo "generated login password (STASH THIS SOMEWHERE): $PASSWORD"
+fi
+
 USERNAME="user"
 HOSTNAME="OSR-Ubuntu"
-echo "generated login password (record this somewhere): $PASSWORD"
 
 m4 -DPASSWORD=$PASSWORD \
 	-DUSE_NET_MIRROR=$USE_NET_MIRROR \
