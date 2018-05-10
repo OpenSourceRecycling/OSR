@@ -51,10 +51,10 @@ mkdir $WORK_DIR
 cd $WORK_DIR
 7z >/dev/null -bd x $ISO
 
-##### set non-zero boot timeout to autostart install
+##### set boot menu with "are you sure?" warning
 
-#echo "patch initrd image and add scripts: preseed.cfg, finalize, find_disk"
-#sed -i -e 's/^timeout 0/timeout 50/' isolinux.cfg
+echo "embed custom installer boot menu"
+cp ../ubuntu-txt.cfg txt.cfg
 
 ##### edit initrd
 
