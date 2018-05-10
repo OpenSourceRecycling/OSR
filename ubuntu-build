@@ -22,7 +22,7 @@
 #
 # 7. Create ISO image from contents of image build area.
 
-WORK_DIR="ubuntu"
+WORK_DIR="work"
 STD_PASSWORD="pswd"
 USE_STD_PASSWORD="y"
 PASSWORD_LEN="12"
@@ -53,8 +53,8 @@ cd $WORK_DIR
 
 ##### set non-zero boot timeout to autostart install
 
-echo "patch initrd image and add scripts: preseed.cfg, finalize, find_disk"
-sed -i -e 's/^timeout 0/timeout 50/' isolinux.cfg
+#echo "patch initrd image and add scripts: preseed.cfg, finalize, find_disk"
+#sed -i -e 's/^timeout 0/timeout 50/' isolinux.cfg
 
 ##### edit initrd
 
