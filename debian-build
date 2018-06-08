@@ -76,7 +76,10 @@ mkdir $WORK_DIR
 cd $WORK_DIR
 7z >/dev/null -bd x $ISO
 
-##### set non-zero boot timeout to autostart install
+##### set boot menu with "are you sure?" warning
+
+echo "embed custom installer boot menu"
+cp ../debian-txt.cfg txt.cfg
 
 echo "patch initrd image and add scripts: preseed.cfg, finalize, find_disk"
 
