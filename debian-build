@@ -52,8 +52,6 @@ cd $WORK_DIR
 
 echo "patch initrd image and add scripts: preseed.cfg, finalize, find_disk"
 
-sed -i -e 's/timeout 0$/timeout 50/' isolinux/isolinux.cfg
-
 ##### edit initrd
 
 #	patch preseed.cfg
@@ -80,17 +78,7 @@ cp ../find_disk .
 #	edit command initrd
 
 echo "rewrap command install initrd"
-INITRD="install.amd/initrd"
-gunzip $INITRD.gz
-echo preseed.cfg | cpio --quiet -H newc -o -A -F $INITRD
-echo finalize | cpio --quiet -H newc -o -A -F $INITRD
-echo find_disk | cpio --quiet -H newc -o -A -F $INITRD
-gzip $INITRD
-
-#	edit graphic initrd
-
-echo "rewrap GUI install initrd"
-INITRD="install.amd/gtk/initrd"
+INITRD="initrd"
 gunzip $INITRD.gz
 echo preseed.cfg | cpio --quiet -H newc -o -A -F $INITRD
 echo finalize | cpio --quiet -H newc -o -A -F $INITRD
@@ -111,7 +99,7 @@ cd ..
 BASE=`basename $ISO`
 PRESEED="preseed-${BASE}"
 echo "remaster ISO image: $PRESEED"
-genisoimage -quiet -r -J -b isolinux/isolinux.bin -c isolinux/boot.cat \
+genisoimage -quiet -r -J -b isolinux.bin -c boot.cat \
 	-no-emul-boot -boot-load-size 4 -boot-info-table \
 	-o ${PRESEED} $WORK_DIR
 # make bootable
