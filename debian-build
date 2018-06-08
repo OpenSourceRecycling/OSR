@@ -28,8 +28,33 @@ STD_PASSWORD="pswd"
 PASSWORD_LEN="12"
 USE_NET_MIRROR="true"
 DESKTOP="mate-desktop"
+ISO=""
+ARCH_URL=""
+USAGE="usage: debian-build --iso <master image> --arch <archive URL>"
 
-ISO=`realpath "$1"`
+while [ $# -gt 0 ]; do
+	case "$1" in
+		--iso ) ISO=$2; shift;;
+		--arch ) ARCH_URL=$2; shift;;
+		esac
+	shift
+	done
+
+if [ "$ISO" = "" ]; then
+	echo $USAGE
+	exit
+fi
+
+if [ "$ARCH_URL" = "" ]; then
+	echo $USAGE
+	exit
+fi
+
+echo "ISO $ISO"
+ARCH_HOST=$(echo $ARCH_URL | cut -d/ -f3)
+echo "ARCHIVE HOST $ARCH_HOST"
+ARCH_PATH=$(echo $ARCH_URL | sed -e "s+https\\?://$ARCH_HOST++")
+echo "ARCHIVE PATH $ARCH_PATH"
 
 if ! which >/dev/null 7z; then
 	echo "please install '7z' file archive utility"
@@ -67,6 +92,8 @@ m4 -DPASSWORD=$PASSWORD \
 	-DUSERNAME=$USERNAME \
 	-DDESKTOP=$DESKTOP \
 	-DHOSTNAME=$HOSTNAME \
+	-DARCH_HOST=$ARCH_HOST \
+	-DARCH_PATH=$ARCH_PATH \
 	../debian-preseed.cfg > preseed.cfg
 
 m4 -DUSERNAME=$USERNAME \
