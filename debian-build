@@ -66,6 +66,8 @@ if [ "$ISO" = "" ]; then
 	exit
 fi
 
+ISO=`realpath $ISO`
+
 echo "unpack master ISO to work area"
 
 rm -rf $WORK_DIR
@@ -111,14 +113,6 @@ echo preseed.cfg | cpio --quiet -H newc -o -A -F $INITRD
 echo finalize | cpio --quiet -H newc -o -A -F $INITRD
 echo find_disk | cpio --quiet -H newc -o -A -F $INITRD
 gzip $INITRD
-
-##### update checksum
-
-echo "update checksums"
-rm preseed.cfg
-rm finalize
-rm find_disk
-md5sum `find 2>/dev/null -follow -type f` > md5sum.txt
 
 ##### remaster ISO image
 
