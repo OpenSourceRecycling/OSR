@@ -3,9 +3,14 @@
 # Set this script as installer's "late_command" preseed variable,
 # to execute after completion of installation and before reboot.
 
-# freshen all packages
+# update sources.list and freshen all packages
 
-apt-get update && apt-get -y upgrade
+if [ -f /tmp/post-install.sources.list ]; then
+	cd /etc/apt
+	mv sources.list sources.list.build
+	mv /tmp/post-install.sources.list sources.list
+	apt-get update && apt-get -y upgrade
+fi
 
 # set auto-login user
 

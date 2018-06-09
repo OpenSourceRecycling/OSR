@@ -12,16 +12,12 @@
 #    Patching includes generating a login password for root and
 #    for non-root user "me".
 #
-# 4. Copy "find_disk" and "finalize" scripts to build area.
+# 4. Copy "find_disk", "finalize" and "sources.list" to build area.
 #
 # 5. Unpack, patch, and repack initrd.gz files to include
-#    files preseed.cfg, find_disk and finalize.
+#    files preseed.cfg, find_disk, post-install.sources.list and finalize.
 #
-# 6. Remove copies of preseed.cfg, find_disk and finalize from
-#    build area (they're now embedded in initrd.gz files) and
-#    update catalog of file checksums.
-#
-# 7. Create ISO image from contents of image build area.
+# 6. Create ISO image from contents of image build area.
 
 WORK_DIR="work"
 STD_PASSWORD="pswd"
@@ -81,7 +77,7 @@ cd $WORK_DIR
 echo "embed custom installer boot menu"
 cp ../debian-txt.cfg txt.cfg
 
-echo "patch initrd image and add scripts: preseed.cfg, finalize, find_disk"
+echo "patch initrd image with files preseed.cfg, finalize, find_disk, sources.list"
 
 ##### edit initrd
 
@@ -112,6 +108,7 @@ m4 -DUSERNAME=$USERNAME \
 chmod +x finalize
 
 cp ../find_disk .
+cp ../debian.sources.list post-install.sources.list
 
 #	edit command initrd
 
@@ -121,6 +118,7 @@ gunzip $INITRD.gz
 echo preseed.cfg | cpio --quiet -H newc -o -A -F $INITRD
 echo finalize | cpio --quiet -H newc -o -A -F $INITRD
 echo find_disk | cpio --quiet -H newc -o -A -F $INITRD
+echo post-install.sources.list | cpio --quiet -H newc -o -A -F $INITRD
 gzip $INITRD
 
 ##### remaster ISO image
