@@ -30,3 +30,7 @@ elif [ -d /etc/gdm3 ]; then
 	SUB="AutomaticLogin = USERNAME"
 	sed -i -e "s/^#\s*AutomaticLogin =.*$/$SUB/" /etc/gdm3/custom.conf
 fi
+
+# add user to sudo
+
+usermod -a -G sudo USERNAME
