@@ -1,8 +1,14 @@
 The image build environment may require additional packages to assure
 that all necessary utilities are present:
 
+genisoimage:
+debian: genisoimage
+
 isohybrid:
 debian: syslinux-utils
 
 m4:
 debian: m4
+
+7z:
+debian: p7zip
