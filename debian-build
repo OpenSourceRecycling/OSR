@@ -81,6 +81,11 @@ fi
 
 ISO=`realpath $ISO`
 
+if [ ! -f $ISO ]; then
+	echo "no such ISO image $ISO"
+	exit
+fi
+
 echo "unpack master ISO to work area"
 
 rm -rf $WORK_DIR
