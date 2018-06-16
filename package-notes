@@ -1,0 +1,8 @@
+The image build environment may require additional packages to assure
+that all necessary utilities are present:
+
+isohybrid:
+debian: syslinux-utils
+
+m4:
+debian: m4
